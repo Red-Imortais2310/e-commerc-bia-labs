@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Bia Labs – Nutrição de Alta Performance</title>
+  <link rel="stylesheet" href="style.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
+</head>
+<body>
+
+  <!-- ===== LOADER ===== -->
+  <div class="loader" id="loader">
+    <div class="loader-inner">
+      <div class="loader-logo">BIA<span>LABS</span></div>
+      <div class="loader-bar"><div class="loader-fill" id="loaderFill"></div></div>
+    </div>
+  </div>
+
+  <!-- ===== CURSOR ===== -->
+  <div class="cursor" id="cursor"></div>
+  <div class="cursor-follower" id="cursorFollower"></div>
+
+  <!-- ===== CART DRAWER ===== -->
+  <div class="cart-overlay" id="cartOverlay" onclick="closeCart()"></div>
+  <div class="cart-drawer" id="cartDrawer">
+    <div class="cart-header">
+      <h3><i class="fas fa-shopping-cart"></i> Meu Carrinho</h3>
+      <button class="cart-close" onclick="closeCart()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="cart-body" id="cartBody">
+      <div class="cart-empty" id="cartEmpty">
+        <i class="fas fa-shopping-bag"></i>
+        <p>Seu carrinho está vazio</p>
+        <span>Adicione produtos para continuar</span>
+      </div>
+      <div class="cart-items-list" id="cartItemsList"></div>
+    </div>
+    <div class="cart-footer" id="cartFooter" style="display:none">
+      <div class="cart-subtotal">
+        <span>Subtotal</span>
+        <strong id="cartSubtotal">R$ 0,00</strong>
+      </div>
+      <div class="cart-shipping">
+        <span><i class="fas fa-truck"></i> Frete grátis acima de R$ 199</span>
+        <span id="freeShipMsg" style="color:var(--green);display:none">✓ Frete grátis aplicado!</span>
+      </div>
+      <button class="btn-checkout">Finalizar Compra <i class="fas fa-arrow-right"></i></button>
+      <button class="btn-continue" onclick="closeCart()">Continuar Comprando</button>
+    </div>
+  </div>
+
+  <!-- ===== MODAL PRODUTO ===== -->
+  <div class="modal-overlay" id="modalOverlay" onclick="closeModal()"></div>
+  <div class="product-modal" id="productModal">
+    <button class="modal-close" onclick="closeModal()"><i class="fas fa-times"></i></button>
+    <div class="modal-grid">
+      <div class="modal-gallery">
+        <div class="modal-main-img" id="modalMainImg"></div>
+        <div class="modal-thumbs" id="modalThumbs"></div>
+      </div>
+      <div class="modal-info">
+        <span class="prod-cat" id="modalCat"></span>
+        <h2 id="modalName"></h2>
+        <div class="modal-rating" id="modalRating"></div>
+        <div class="modal-price" id="modalPrice"></div>
+        <p class="modal-desc" id="modalDesc"></p>
+        <div class="modal-macros" id="modalMacros"></div>
+        <div class="modal-qty">
+          <span>Quantidade:</span>
+          <div class="qty-ctrl">
+            <button onclick="changeQty(-1)">−</button>
+            <span id="qtyVal">1</span>
+            <button onclick="changeQty(1)">+</button>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button class="btn-primary" onclick="addToCartFromModal()">
+            <i class="fas fa-cart-plus"></i> Adicionar ao Carrinho
+          </button>
+          <button class="modal-wish" id="modalWishBtn" onclick="toggleModalWish()">
+            <i class="far fa-heart"></i>
+          </button>
+        </div>
+        <div class="modal-badges">
+          <span><i class="fas fa-shield-alt"></i> ANVISA Aprovado</span>
+          <span><i class="fas fa-truck"></i> Frete Grátis</span>
+          <span><i class="fas fa-undo"></i> 30 dias garantia</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== NAVBAR ===== -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <a href="#home" class="nav-logo">BIA<span>LABS</span></a>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="#home"     class="nav-link active">Home</a></li>
+        <li><a href="#sobre"    class="nav-link">Sobre</a></li>
+        <li><a href="#produtos" class="nav-link">Produtos</a></li>
+        <li><a href="#planos"   class="nav-link">Planos</a></li>
+        <li><a href="#blog"     class="nav-link">Blog</a></li>
+        <li><a href="#contato"  class="nav-link">Contato</a></li>
+      </ul>
+      <div class="nav-right">
+        <!-- BUSCA -->
+        <div class="search-wrap" id="searchWrap">
+          <input type="text" class="search-input" id="searchInput" placeholder="Buscar produtos..." oninput="searchProducts(this.value)"/>
+          <button class="search-toggle" id="searchToggle" onclick="toggleSearch()">
+            <i class="fas fa-search"></i>
+          </button>
+          <div class="search-results" id="searchResults"></div>
+        </div>
+        <!-- LANG -->
+        <button class="lang-toggle" id="langToggle" onclick="toggleLang()">
+          <span id="langFlag">🇧🇷</span> <span id="langLabel">PT</span>
+        </button>
+        <!-- THEME -->
+        <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">
+          <i class="fas fa-moon" id="themeIcon"></i>
+        </button>
+        <!-- CART -->
+        <button class="btn-cart" id="cartBtn" onclick="openCart()">
+          <i class="fas fa-shopping-cart"></i>
+          <span class="cart-count" id="cartCount">0</span>
+        </button>
+        <a href="#produtos" class="btn-cta" data-i18n="nav_cta">Comprar Agora</a>
+        <button class="hamburger" id="hamburger">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- MOBILE MENU -->
+  <div class="mobile-nav" id="mobileNav">
+    <button class="mobile-close" id="mobileClose"><i class="fas fa-times"></i></button>
+    <ul>
+      <li><a href="#home"     onclick="closeMobileNav()" data-i18n="nav_home">Home</a></li>
+      <li><a href="#sobre"    onclick="closeMobileNav()" data-i18n="nav_about">Sobre</a></li>
+      <li><a href="#produtos" onclick="closeMobileNav()" data-i18n="nav_products">Produtos</a></li>
+      <li><a href="#planos"   onclick="closeMobileNav()" data-i18n="nav_plans">Planos</a></li>
+      <li><a href="#blog"     onclick="closeMobileNav()">Blog</a></li>
+      <li><a href="#contato"  onclick="closeMobileNav()" data-i18n="nav_contact">Contato</a></li>
+    </ul>
+  </div>
+
+  <!-- ===== HERO ===== -->
+  <section class="hero" id="home">
+    <div class="hero-bg">
+      <img src="https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=1800&q=90" alt="Hero" class="hero-img"/>
+      <div class="hero-overlay"></div>
+    </div>
+    <div class="hero-content">
+      <div class="hero-tag">
+        <span class="tag-dot"></span>
+        <span data-i18n="hero_tag">Nutrição Científica de Elite</span>
+      </div>
+      <h1 class="hero-title">
+        <span data-i18n="hero_title1">ELEVE SEU</span><br/>
+        <span class="title-stroke" data-i18n="hero_title2">POTENCIAL</span><br/>
+        <span data-i18n="hero_title3">AO MÁXIMO</span>
+      </h1>
+      <p class="hero-desc" data-i18n="hero_desc">
+        Suplementos e produtos nutricionais desenvolvidos com tecnologia de ponta.
+        Resultados reais para quem não aceita o ordinário.
+      </p>
+      <div class="hero-actions">
+        <a href="#produtos" class="btn-primary" data-i18n="hero_btn1">
+          Explorar Produtos <i class="fas fa-arrow-right"></i>
+        </a>
+        <a href="#sobre" class="btn-video">
+          <div class="play-btn"><i class="fas fa-play"></i></div>
+          <span data-i18n="hero_btn2">Ver nossa história</span>
+        </a>
+      </div>
+      <div class="hero-numbers">
+        <div class="hero-num">
+          <strong data-target="15000">0</strong>
+          <span data-i18n="hero_stat1">Clientes Ativos</span>
+        </div>
+        <div class="hero-num-divider"></div>
+        <div class="hero-num">
+          <strong data-target="98">0</strong><strong>%</strong>
+          <span data-i18n="hero_stat2">Satisfação</span>
+        </div>
+        <div class="hero-num-divider"></div>
+        <div class="hero-num">
+          <strong data-target="120">0</strong>
+          <span data-i18n="hero_stat3">Produtos</span>
+        </div>
+      </div>
+    </div>
+    <div class="hero-scroll">
+      <div class="scroll-line"></div>
+      <span>SCROLL</span>
+    </div>
+  </section>
+
+  <!-- ===== MARQUEE ===== -->
+  <div class="marquee-strip">
+    <div class="marquee-track">
+      <span>WHEY PROTEIN</span><span class="dot">✦</span>
+      <span>CREATINA</span><span class="dot">✦</span>
+      <span>VITAMINAS</span><span class="dot">✦</span>
+      <span>PRÉ-TREINO</span><span class="dot">✦</span>
+      <span>BCAA</span><span class="dot">✦</span>
+      <span>COLÁGENO</span><span class="dot">✦</span>
+      <span>ÔMEGA-3</span><span class="dot">✦</span>
+      <span>MULTIVITAMÍNICO</span><span class="dot">✦</span>
+      <span>WHEY PROTEIN</span><span class="dot">✦</span>
+      <span>CREATINA</span><span class="dot">✦</span>
+      <span>VITAMINAS</span><span class="dot">✦</span>
+      <span>PRÉ-TREINO</span><span class="dot">✦</span>
+      <span>BCAA</span><span class="dot">✦</span>
+      <span>COLÁGENO</span><span class="dot">✦</span>
+      <span>ÔMEGA-3</span><span class="dot">✦</span>
+      <span>MULTIVITAMÍNICO</span><span class="dot">✦</span>
+    </div>
+  </div>
+
+  <!-- ===== SOBRE ===== -->
+  <section class="sobre" id="sobre">
+    <div class="container">
+      <div class="sobre-grid">
+        <div class="sobre-images">
+          <div class="sobre-img-main">
+            <img src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800&q=85" alt="Alimentação saudável"/>
+          </div>
+          <div class="sobre-img-secondary">
+            <img src="https://images.unsplash.com/photo-1547592180-85f173990554?w=500&q=85" alt="Nutrição"/>
+          </div>
+          <div class="sobre-badge-float">
+            <i class="fas fa-award"></i>
+            <div>
+              <strong>Certificado</strong>
+              <span>ANVISA & ISO</span>
+            </div>
+          </div>
+        </div>
+        <div class="sobre-content">
+          <div class="section-tag" data-i18n="about_tag">QUEM SOMOS</div>
+          <h2 class="section-title" data-i18n="about_title">Ciência aplicada à<br/><span>sua nutrição</span></h2>
+          <p data-i18n="about_p1">A <strong>Bia Labs</strong> nasceu da crença de que a nutrição de precisão transforma vidas. Combinamos pesquisa científica com ingredientes premium para criar produtos que entregam resultados mensuráveis.</p>
+          <p data-i18n="about_p2">Cada fórmula é desenvolvida por nosso time de nutricionistas e bioquímicos, testada rigorosamente antes de chegar até você.</p>
+          <div class="sobre-features">
+            <div class="feature-item">
+              <div class="feature-icon"><i class="fas fa-flask"></i></div>
+              <div>
+                <strong data-i18n="feat1_title">Fórmulas Exclusivas</strong>
+                <span data-i18n="feat1_sub">Desenvolvidas no nosso próprio laboratório</span>
+              </div>
+            </div>
+            <div class="feature-item">
+              <div class="feature-icon"><i class="fas fa-leaf"></i></div>
+              <div>
+                <strong data-i18n="feat2_title">Ingredientes Naturais</strong>
+                <span data-i18n="feat2_sub">Sem corantes artificiais ou aditivos nocivos</span>
+              </div>
+            </div>
+            <div class="feature-item">
+              <div class="feature-icon"><i class="fas fa-shield-alt"></i></div>
+              <div>
+                <strong data-i18n="feat3_title">Certificação ANVISA</strong>
+                <span data-i18n="feat3_sub">Todos os produtos aprovados e registrados</span>
+              </div>
+            </div>
+          </div>
+          <a href="#produtos" class="btn-primary" data-i18n="about_btn">Conhecer Produtos <i class="fas fa-arrow-right"></i></a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== CATEGORIAS ===== -->
+  <section class="categorias" id="categorias">
+    <div class="container">
+      <div class="section-header center">
+        <div class="section-tag" data-i18n="cat_tag">LINHA COMPLETA</div>
+        <h2 class="section-title" data-i18n="cat_title">Categorias em <span>Destaque</span></h2>
+      </div>
+      <div class="cat-grid">
+        <div class="cat-card cat-big">
+          <img src="https://images.unsplash.com/photo-1593095948071-474c5cc2989d?w=900&q=85" alt="Proteínas"/>
+          <div class="cat-overlay">
+            <span class="cat-tag">Mais Vendido</span>
+            <h3>Proteínas & Whey</h3>
+            <p>48 produtos</p>
+            <a href="#produtos" class="cat-btn">Ver tudo <i class="fas fa-arrow-right"></i></a>
+          </div>
+        </div>
+        <div class="cat-card">
+          <img src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=600&q=85" alt="Pré-treino"/>
+          <div class="cat-overlay">
+            <h3>Pré-treino</h3>
+            <p>23 produtos</p>
+            <a href="#produtos" class="cat-btn">Ver tudo <i class="fas fa-arrow-right"></i></a>
+          </div>
+        </div>
+        <div class="cat-card">
+          <img src="https://images.unsplash.com/photo-1559181567-c3190ca9d222?w=600&q=85" alt="Vitaminas"/>
+          <div class="cat-overlay">
+            <h3>Vitaminas & Minerais</h3>
+            <p>35 produtos</p>
+            <a href="#produtos" class="cat-btn">Ver tudo <i class="fas fa-arrow-right"></i></a>
+          </div>
+        </div>
+        <div class="cat-card">
+          <img src="https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=600&q=85" alt="Dieta"/>
+          <div class="cat-overlay">
+            <h3>Emagrecimento</h3>
+            <p>19 produtos</p>
+            <a href="#produtos" class="cat-btn">Ver tudo <i class="fas fa-arrow-right"></i></a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== PRODUTOS ===== -->
+  <section class="produtos" id="produtos">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-header-left">
+          <div class="section-tag" data-i18n="prod_tag">NOSSO PORTFÓLIO</div>
+          <h2 class="section-title" data-i18n="prod_title">Produtos <span>Premium</span></h2>
+        </div>
+        <div class="filter-tabs">
+          <button class="filter-tab active" data-filter="all" data-i18n="filter_all">Todos</button>
+          <button class="filter-tab" data-filter="proteina" data-i18n="filter_prot">Proteínas</button>
+          <button class="filter-tab" data-filter="vitamina" data-i18n="filter_vit">Vitaminas</button>
+          <button class="filter-tab" data-filter="energia" data-i18n="filter_ener">Energia</button>
+          <button class="filter-tab" data-filter="saude" data-i18n="filter_health">Saúde</button>
+        </div>
+      </div>
+
+      <!-- SEARCH BAR INLINE -->
+      <div class="inline-search">
+        <i class="fas fa-search"></i>
+        <input type="text" id="inlineSearch" placeholder="Buscar produto..." oninput="searchProducts(this.value)"/>
+        <button onclick="document.getElementById('inlineSearch').value='';searchProducts('')">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <div class="products-grid" id="productsGrid">
+
+        <!-- os cards são gerados via JS -->
+
+      </div>
+      <div class="no-results" id="noResults" style="display:none">
+        <i class="fas fa-search"></i>
+        <p data-i18n="no_results">Nenhum produto encontrado</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SLIDER DEPOIMENTOS ===== -->
+  <section class="depoimentos">
+    <div class="container">
+      <div class="section-header center">
+        <div class="section-tag" data-i18n="dep_tag">RESULTADOS REAIS</div>
+        <h2 class="section-title" data-i18n="dep_title">Quem usa, <span>aprova</span></h2>
+      </div>
+      <div class="slider-wrap">
+        <div class="dep-slider" id="depSlider">
+          <div class="dep-card">
+            <div class="dep-stars">★★★★★</div>
+            <p>"Perdi 12kg em 4 meses usando o programa da Bia Labs. Os produtos são de uma qualidade absurda, sem comparação com o que eu usava antes."</p>
+            <div class="dep-author">
+              <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&q=80" alt="Fernanda"/>
+              <div><strong>Fernanda Lima</strong><span>São Paulo - SP • Cliente há 1 ano</span></div>
+            </div>
+          </div>
+          <div class="dep-card featured">
+            <div class="dep-stars">★★★★★</div>
+            <p>"O Whey Protein Isolado da Bia Labs é o melhor que já usei. Textura ótima, sabor incrível e resultado visível. Indico para todos os meus alunos!"</p>
+            <div class="dep-author">
+              <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80" alt="Ricardo"/>
+              <div><strong>Ricardo Souza</strong><span>Personal Trainer • Rio de Janeiro - RJ</span></div>
+            </div>
+          </div>
+          <div class="dep-card">
+            <div class="dep-stars">★★★★★</div>
+            <p>"Assinei o plano Pro e foi a melhor decisão. Além de economizar bastante, ainda tenho consulta mensal com nutricionista. Muito além do esperado!"</p>
+            <div class="dep-author">
+              <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80" alt="Camila"/>
+              <div><strong>Camila Ramos</strong><span>Campinas - SP • Plano Pro</span></div>
+            </div>
+          </div>
+          <div class="dep-card">
+            <div class="dep-stars">★★★★★</div>
+            <p>"Nunca achei que um suplemento faria tanta diferença. A Creatina BIA é pura, sem sabor forte, e os resultados na academia foram visíveis em 3 semanas!"</p>
+            <div class="dep-author">
+              <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&q=80" alt="Bruno"/>
+              <div><strong>Bruno Mendes</strong><span>Curitiba - PR • Cliente há 8 meses</span></div>
+            </div>
+          </div>
+          <div class="dep-card">
+            <div class="dep-stars">★★★★★</div>
+            <p>"O multivitamínico BIA Total mudou minha disposição diária. Me sinto muito mais energizada e focada no trabalho. Produto excepcional!"</p>
+            <div class="dep-author">
+              <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&q=80" alt="Juliana"/>
+              <div><strong>Juliana Costa</strong><span>Belo Horizonte - MG • Plano Elite</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="slider-controls">
+          <button class="slider-btn" id="sliderPrev" onclick="slideMove(-1)"><i class="fas fa-arrow-left"></i></button>
+          <div class="slider-dots" id="sliderDots"></div>
+          <button class="slider-btn" id="sliderNext" onclick="slideMove(1)"><i class="fas fa-arrow-right"></i></button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== PLANOS ===== -->
+  <section class="planos" id="planos">
+    <div class="container">
+      <div class="section-header center">
+        <div class="section-tag" data-i18n="plan_tag">ASSINE E ECONOMIZE</div>
+        <h2 class="section-title" data-i18n="plan_title">Planos de <span>Assinatura</span></h2>
+        <p class="section-sub" data-i18n="plan_sub">Receba seus suplementos todo mês com desconto exclusivo de assinante</p>
+      </div>
+      <div class="planos-grid">
+        <div class="plano-card">
+          <div class="plano-header">
+            <span class="plano-name">Starter</span>
+            <div class="plano-price"><strong>R$ 89</strong><span>/mês</span></div>
+          </div>
+          <ul class="plano-list">
+            <li><i class="fas fa-check"></i> 2 produtos por mês</li>
+            <li><i class="fas fa-check"></i> 10% de desconto</li>
+            <li><i class="fas fa-check"></i> Frete grátis</li>
+            <li><i class="fas fa-check"></i> Suporte por e-mail</li>
+            <li class="off"><i class="fas fa-times"></i> Consulta nutricional</li>
+            <li class="off"><i class="fas fa-times"></i> Produtos exclusivos</li>
+          </ul>
+          <button class="btn-plano" onclick="showToast('Plano Starter selecionado! ✅')">Assinar Starter</button>
+        </div>
+        <div class="plano-card featured">
+          <div class="plano-badge">Mais Popular</div>
+          <div class="plano-header">
+            <span class="plano-name">Pro</span>
+            <div class="plano-price"><strong>R$ 199</strong><span>/mês</span></div>
+          </div>
+          <ul class="plano-list">
+            <li><i class="fas fa-check"></i> 5 produtos por mês</li>
+            <li><i class="fas fa-check"></i> 20% de desconto</li>
+            <li><i class="fas fa-check"></i> Frete grátis</li>
+            <li><i class="fas fa-check"></i> Suporte prioritário</li>
+            <li><i class="fas fa-check"></i> 1 consulta nutricional/mês</li>
+            <li class="off"><i class="fas fa-times"></i> Produtos exclusivos</li>
+          </ul>
+          <button class="btn-plano featured" onclick="showToast('Plano Pro selecionado! 🚀')">Assinar Pro</button>
+        </div>
+        <div class="plano-card">
+          <div class="plano-header">
+            <span class="plano-name">Elite</span>
+            <div class="plano-price"><strong>R$ 349</strong><span>/mês</span></div>
+          </div>
+          <ul class="plano-list">
+            <li><i class="fas fa-check"></i> Produtos ilimitados</li>
+            <li><i class="fas fa-check"></i> 30% de desconto</li>
+            <li><i class="fas fa-check"></i> Frete grátis + expresso</li>
+            <li><i class="fas fa-check"></i> Suporte 24/7</li>
+            <li><i class="fas fa-check"></i> Consultas ilimitadas</li>
+            <li><i class="fas fa-check"></i> Produtos exclusivos</li>
+          </ul>
+          <button class="btn-plano" onclick="showToast('Plano Elite selecionado! 👑')">Assinar Elite</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== BANNER FULLWIDTH ===== -->
+  <div class="full-banner">
+    <img src="https://images.unsplash.com/photo-1547592180-85f173990554?w=1800&q=85" alt="Banner"/>
+    <div class="full-banner-overlay">
+      <div class="container">
+        <div class="banner-content">
+          <h2 data-i18n="banner_title">TRANSFORME SEU<br/><span>CORPO E MENTE</span></h2>
+          <p data-i18n="banner_sub">Com os suplementos certos e a orientação da Bia Labs, seus resultados chegam mais rápido.</p>
+          <a href="#produtos" class="btn-primary" data-i18n="banner_btn">Começar Agora <i class="fas fa-arrow-right"></i></a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== BLOG ===== -->
+  <section class="blog" id="blog">
+    <div class="container">
+      <div class="section-header center">
+        <div class="section-tag">CONHECIMENTO</div>
+        <h2 class="section-title">Blog & <span>Dicas</span></h2>
+        <p class="section-sub">Conteúdo científico e prático para você tomar melhores decisões</p>
+      </div>
+      <div class="blog-grid">
+        <div class="blog-card blog-main">
+          <div class="blog-img">
+            <img src="https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=900&q=85" alt="Blog 1"/>
+            <span class="blog-cat">Nutrição</span>
+          </div>
+          <div class="blog-info">
+            <span class="blog-date">07 Abr, 2026</span>
+            <h3>Guia completo: como escolher o Whey Protein ideal para seus objetivos</h3>
+            <p>Entenda as diferenças entre concentrado, isolado e hidrolisado e saiba qual é o certo para você...</p>
+            <a href="#" class="blog-link">Ler artigo <i class="fas fa-arrow-right"></i></a>
+          </div>
+        </div>
+        <div class="blog-card">
+          <div class="blog-img">
+            <img src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=600&q=85" alt="Blog 2"/>
+            <span class="blog-cat">Treino</span>
+          </div>
+          <div class="blog-info">
+            <span class="blog-date">02 Abr, 2026</span>
+            <h3>Creatina: mitos e verdades sobre o suplemento mais estudado do mundo</h3>
+            <a href="#" class="blog-link">Ler artigo <i class="fas fa-arrow-right"></i></a>
+          </div>
+        </div>
+        <div class="blog-card">
+          <div class="blog-img">
+            <img src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=600&q=85" alt="Blog 3"/>
+            <span class="blog-cat">Saúde</span>
+          </div>
+          <div class="blog-info">
+            <span class="blog-date">28 Mar, 2026</span>
+            <h3>Por que a vitamina D3 combinada com K2 é mais eficaz?</h3>
+            <a href="#" class="blog-link">Ler artigo <i class="fas fa-arrow-right"></i></a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== CONTATO ===== -->
+  <section class="contato" id="contato">
+    <div class="container">
+      <div class="contato-grid">
+        <div class="contato-left">
+          <div class="section-tag" data-i18n="contact_tag">FALE CONOSCO</div>
+          <h2 class="section-title" data-i18n="contact_title">Vamos <span>conversar?</span></h2>
+          <p data-i18n="contact_sub">Tem dúvidas sobre nossos produtos, planos ou quer uma orientação nutricional? Nossa equipe está pronta para te ajudar!</p>
+          <div class="contato-items">
+            <div class="contato-item">
+              <div class="contato-icon"><i class="fas fa-map-marker-alt"></i></div>
+              <div><strong>Endereço</strong><span>São Vicente, SP — Brasil</span></div>
+            </div>
+            <div class="contato-item">
+              <div class="contato-icon"><i class="fab fa-whatsapp"></i></div>
+              <div><strong>WhatsApp</strong><span>(13) 99999-9999</span></div>
+            </div>
+            <div class="contato-item">
+              <div class="contato-icon"><i class="fas fa-envelope"></i></div>
+              <div><strong>E-mail</strong><span>contato@bialabs.com.br</span></div>
+            </div>
+          </div>
+          <div class="contato-socials">
+            <a href="#"><i class="fab fa-instagram"></i></a>
+            <a href="#"><i class="fab fa-youtube"></i></a>
+            <a href="#"><i class="fab fa-tiktok"></i></a>
+            <a href="#"><i class="fab fa-whatsapp"></i></a>
+          </div>
+        </div>
+        <form class="contato-form" id="contatoForm">
+          <div class="form-row">
+            <div class="form-group">
+              <label data-i18n="form_name">Nome</label>
+              <input type="text" placeholder="Seu nome completo" required/>
+            </div>
+            <div class="form-group">
+              <label data-i18n="form_email">E-mail</label>
+              <input type="email" placeholder="seu@email.com" required/>
+            </div>
+          </div>
+          <div class="form-group">
+            <label data-i18n="form_subject">Assunto</label>
+            <select>
+              <option>Dúvida sobre produtos</option>
+              <option>Planos de assinatura</option>
+              <option>Consultoria nutricional</option>
+              <option>Parceria comercial</option>
+              <option>Outro</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label data-i18n="form_msg">Mensagem</label>
+            <textarea rows="5" placeholder="Escreva sua mensagem..." required></textarea>
+          </div>
+          <button type="submit" class="btn-primary" style="width:100%;justify-content:center;" data-i18n="form_btn">
+            Enviar Mensagem <i class="fas fa-paper-plane"></i>
+          </button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <div class="footer-logo">BIA<span>LABS</span></div>
+          <p>Nutrição de alta performance baseada em ciência. Transformando corpos e mentes desde 2018.</p>
+          <div class="footer-seals">
+            <span><i class="fas fa-shield-alt"></i> ANVISA</span>
+            <span><i class="fas fa-award"></i> ISO 9001</span>
+            <span><i class="fas fa-leaf"></i> Natural</span>
+          </div>
+        </div>
+        <div class="footer-col">
+          <h4>Produtos</h4>
+          <ul>
+            <li><a href="#">Proteínas & Whey</a></li>
+            <li><a href="#">Pré-treino</a></li>
+            <li><a href="#">Vitaminas</a></li>
+            <li><a href="#">Emagrecimento</a></li>
+            <li><a href="#">Saúde & Bem-estar</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Empresa</h4>
+          <ul>
+            <li><a href="#">Sobre nós</a></li>
+            <li><a href="#">Blog</a></li>
+            <li><a href="#">Planos</a></li>
+            <li><a href="#">Afiliados</a></li>
+            <li><a href="#">Trabalhe conosco</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Suporte</h4>
+          <ul>
+            <li><a href="#">Central de ajuda</a></li>
+            <li><a href="#">Rastrear pedido</a></li>
+            <li><a href="#">Política de troca</a></li>
+            <li><a href="#">Termos de uso</a></li>
+            <li><a href="#">Privacidade</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2026 <span>Bia Labs</span>. Todos os direitos reservados.</p>
+        <div class="payment-methods">
+          <span>PIX</span><span>VISA</span><span>MASTER</span><span>BOLETO</span><span>AMEX</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ===== WHATSAPP FLOAT ===== -->
+  <a href="https://wa.me/5513999999999?text=Olá!%20Vim%20pelo%20site%20da%20Bia%20Labs%20e%20gostaria%20de%20mais%20informações."
+     class="whatsapp-float" target="_blank" id="whatsappFloat">
+    <i class="fab fa-whatsapp"></i>
+    <span class="wpp-tooltip">Fale conosco!</span>
+  </a>
+
+  <!-- ===== TOAST ===== -->
+  <div class="toast" id="toast">
+    <i class="fas fa-check-circle"></i>
+    <span id="toastMsg">Produto adicionado!</span>
+  </div>
+
+  <!-- ===== SCROLL TOP ===== -->
+  <button class="scroll-top-btn" id="scrollTopBtn" onclick="window.scrollTo({top:0,behavior:'smooth'})">
+    <i class="fas fa-arrow-up"></i>
+  </button>
+
+  <script src="script.js"></script>
+</body>
+</html>
